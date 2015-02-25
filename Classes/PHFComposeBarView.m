@@ -1,5 +1,5 @@
 #import <QuartzCore/QuartzCore.h>
-#import <PHFDelegateChain/PHFDelegateChain.h>
+#import "PHFDelegateChain.h"
 #import "PHFComposeBarView.h"
 #import "PHFComposeBarView_TextView.h"
 #import "PHFComposeBarView_Button.h"
@@ -66,21 +66,31 @@ static CGFloat kTextViewToSuperviewHeightDelta;
 
 #pragma mark - UIView
 
-- (id)initWithFrame:(CGRect)frame {
+- (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
 
-    [self calculateRuntimeConstants];
-    [self setup];
+    if (self) {
+        
+        [self calculateRuntimeConstants];
+        [self setup];
+        
+    }
 
     return self;
 }
 
-- (void)awakeFromNib
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
 {
-  [super awakeFromNib];
+    self = [super initWithCoder:aDecoder];
 
-  [self calculateRuntimeConstants];
-  [self setup];
+    if (self) {
+
+        [self calculateRuntimeConstants];
+        [self setup];
+        
+    }
+    
+    return self;
 }
 
 - (BOOL)becomeFirstResponder {
@@ -606,7 +616,7 @@ static CGFloat kTextViewToSuperviewHeightDelta;
 - (void)setup {
     _autoAdjustTopOffset = YES;
     _enabled = YES;
-    _maxHeight = 200.0f;
+    _maxHeight = 300.0f;
 
     [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleTopMargin];
 
@@ -643,7 +653,7 @@ static CGFloat kTextViewToSuperviewHeightDelta;
 
     if (!isHidden) {
         NSInteger count = [[[[self textView] text] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length];
-        NSString *text = [NSString stringWithFormat:@"%d/%d", count, [self maxCharCount]];
+        NSString *text = [NSString stringWithFormat:@"%ld/%ld", (long)count, [self maxCharCount]];
         [[self charCountLabel] setText:text];
     }
 }
