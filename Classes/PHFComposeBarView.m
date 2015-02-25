@@ -379,10 +379,27 @@ static CGFloat kTextViewToSuperviewHeightDelta;
         [[self placeholderLabel] setFrame:placeholderFrame];
         [_textContainer addSubview:[self placeholderLabel]];
 
-        [_textContainer addTarget:[self textView] action:@selector(becomeFirstResponder) forControlEvents:UIControlEventTouchUpInside];
+        [_textContainer addTarget:self action:@selector(textContainerWasTouched:) forControlEvents:UIControlEventTouchUpInside];
+        
+        NSArray *gestures = _textContainer.gestureRecognizers;
+        if (gestures.count) {
+            for (UIGestureRecognizer *gesture in gestures) {
+                gesture.delaysTouchesBegan = YES;
+                NSLog(@"%@ %@", NSStringFromSelector(_cmd), gesture.delegate);
+            }
+        }
+        
     }
 
     return _textContainer;
+}
+
+- (IBAction)textContainerWasTouched:(id)sender {
+
+    if ([self textView]) {
+        [[self textView] becomeFirstResponder];
+    }
+    
 }
 
 @synthesize textView = _textView;
