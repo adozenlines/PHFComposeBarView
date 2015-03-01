@@ -21,7 +21,6 @@ extern NSString *const PHFComposeBarViewFrameEndUserInfoKey;          // NSValue
 
 @protocol PHFComposeBarViewDelegate;
 
-
 @interface PHFComposeBarView : UIView <UITextViewDelegate>
 
 // Default is YES. When YES, the auto resizing top margin will be flexible.

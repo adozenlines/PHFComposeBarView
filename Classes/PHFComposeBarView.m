@@ -57,7 +57,7 @@ static CGFloat kTextViewToSuperviewHeightDelta;
 @property (strong, nonatomic, readonly) UIView *topLineView;
 @property (strong, nonatomic, readonly) UILabel *charCountLabel;
 @property (strong, nonatomic) PHFDelegateChain *delegateChain;
-@property (strong, nonatomic, readonly) UIButton *textContainer;
+@property (strong, nonatomic, readonly) UIView *textContainer;
 @property (assign, nonatomic) CGFloat previousTextHeight;
 @end
 
@@ -289,6 +289,7 @@ static CGFloat kTextViewToSuperviewHeightDelta;
         [_backgroundView setTranslucent:YES];
         [_backgroundView setTintColor:[UIColor whiteColor]];
         [_backgroundView setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
+        [_backgroundView setUserInteractionEnabled:NO];
     }
 
     return _backgroundView;
@@ -342,18 +343,25 @@ static CGFloat kTextViewToSuperviewHeightDelta;
 @synthesize textContainer = _textContainer;
 // Returns the text container which contains the actual text view, the
 // placeholder and the image view that contains the text field image.
-- (UIButton *)textContainer {
+- (UIView *)textContainer {
     if (!_textContainer) {
         CGRect textContainerFrame = CGRectMake(kHorizontalSpacing,
                                                kTextContainerTopMargin,
                                                [self bounds].size.width - kHorizontalSpacing * 3 - kButtonRightMargin,
                                                [self bounds].size.height - kTextContainerTopMargin - kTextContainerBottomMargin);
-        _textContainer = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_textContainer setFrame:textContainerFrame];
+        _textContainer = [[UIView alloc] initWithFrame:textContainerFrame];
         [_textContainer setClipsToBounds:YES];
         [_textContainer setBackgroundColor:[UIColor colorWithWhite:0.98f alpha:1.0f]];
         [_textContainer setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
 
+        CGRect placeholderFrame = CGRectMake(kPlaceholderSideMargin,
+                                             kPlaceholderTopMargin,
+                                             textContainerFrame.size.width - 2 * kPlaceholderSideMargin,
+                                             kPlaceholderHeight);
+        [[self placeholderLabel] setFrame:placeholderFrame];
+        [_textContainer addSubview:[self placeholderLabel]];
+
+        
         CALayer *layer = [_textContainer layer];
         UIColor *borderColor = [UIColor colorWithHue:240.0f/360.0f saturation:0.02f brightness:0.8f alpha:1.0f];
         [layer setBorderColor:[borderColor CGColor]];
@@ -372,34 +380,10 @@ static CGFloat kTextViewToSuperviewHeightDelta;
         [[self textView] setFrame:textViewFrame];
         [_textContainer addSubview:[self textView]];
 
-        CGRect placeholderFrame = CGRectMake(kPlaceholderSideMargin,
-                                             kPlaceholderTopMargin,
-                                             textContainerFrame.size.width - 2 * kPlaceholderSideMargin,
-                                             kPlaceholderHeight);
-        [[self placeholderLabel] setFrame:placeholderFrame];
-        [_textContainer addSubview:[self placeholderLabel]];
 
-        [_textContainer addTarget:self action:@selector(textContainerWasTouched:) forControlEvents:UIControlEventTouchUpInside];
-        
-        NSArray *gestures = _textContainer.gestureRecognizers;
-        if (gestures.count) {
-            for (UIGestureRecognizer *gesture in gestures) {
-                gesture.delaysTouchesBegan = YES;
-                NSLog(@"%@ %@", NSStringFromSelector(_cmd), gesture.delegate);
-            }
-        }
-        
     }
 
     return _textContainer;
-}
-
-- (IBAction)textContainerWasTouched:(id)sender {
-
-    if ([self textView]) {
-        [[self textView] becomeFirstResponder];
-    }
-    
 }
 
 @synthesize textView = _textView;
