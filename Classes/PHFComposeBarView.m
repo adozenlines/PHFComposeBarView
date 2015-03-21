@@ -52,7 +52,7 @@ static CGFloat kTextViewFirstLineHeight;
 static CGFloat kTextViewToSuperviewHeightDelta;
 
 
-@interface PHFComposeBarView ()
+@interface PHFComposeBarView () <UITextViewDelegate>
 @property (strong, nonatomic, readonly) UIToolbar *backgroundView;
 @property (strong, nonatomic, readonly) UIView *topLineView;
 @property (strong, nonatomic, readonly) UILabel *charCountLabel;
@@ -696,6 +696,18 @@ static CGFloat kTextViewToSuperviewHeightDelta;
     [self scrollToCaretIfNeeded];
     [self updateCharCountLabel];
     [self updateButtonEnabled];
+}
+
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
+{
+    if ([self.delegate conformsToProtocol:@protocol(PHFComposeBarViewDelegate) ]) {
+        
+        if ([_delegate respondsToSelector:@selector(composeBarViewIsComposing:)]) {
+            
+            [_delegate composeBarViewIsComposing:self];
+        }
+    }
+    return YES;
 }
 
 @end
