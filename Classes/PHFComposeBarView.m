@@ -53,6 +53,10 @@ static CGFloat kTextViewToSuperviewHeightDelta;
 
 
 @interface PHFComposeBarView () <UITextViewDelegate>
+{
+    BOOL isComposing;
+    NSTimer *checkComposer;
+}
 @property (strong, nonatomic, readonly) UIToolbar *backgroundView;
 @property (strong, nonatomic, readonly) UIView *topLineView;
 @property (strong, nonatomic, readonly) UILabel *charCountLabel;
@@ -63,6 +67,14 @@ static CGFloat kTextViewToSuperviewHeightDelta;
 
 
 @implementation PHFComposeBarView
+
+- (void)dealloc
+{
+    if (checkComposer.isValid) {
+        [checkComposer invalidate];
+        checkComposer = nil;
+    }
+}
 
 #pragma mark - UIView
 
@@ -628,6 +640,8 @@ static CGFloat kTextViewToSuperviewHeightDelta;
     [self addSubview:[self textContainer]];
 
     [self resizeButton];
+    checkComposer = [NSTimer scheduledTimerWithTimeInterval:15 target:self selector:@selector(composeBarViewIsNotComposing:) userInfo:NULL repeats:YES];
+    
 }
 
 - (void)setupDelegateChainForTextView {
@@ -702,12 +716,41 @@ static CGFloat kTextViewToSuperviewHeightDelta;
 {
     if ([self.delegate conformsToProtocol:@protocol(PHFComposeBarViewDelegate) ]) {
         
-        if ([_delegate respondsToSelector:@selector(composeBarViewIsComposing:)]) {
+        if (text.length && [_delegate respondsToSelector:@selector(composeBarViewIsComposing:)]) {
             
             [_delegate composeBarViewIsComposing:self];
+            isComposing = YES;
+            
+        } else {
+     
+            if ([_delegate respondsToSelector:@selector(composeBarViewIsPausedComposing:)]) {
+                
+                [_delegate composeBarViewIsPausedComposing:self];
+                isComposing = NO;
+                
+            }
+
         }
     }
     return YES;
 }
+
+- (void)composeBarViewIsNotComposing:(NSTimer *)timer
+{
+
+    if (!isComposing) return;
+    
+    if ([self.delegate conformsToProtocol:@protocol(PHFComposeBarViewDelegate) ]) {
+        
+        if ([_delegate respondsToSelector:@selector(composeBarViewIsPausedComposing:)]) {
+            
+            [_delegate composeBarViewIsPausedComposing:self];
+            isComposing = NO;
+
+        }
+    }
+    
+}
+
 
 @end
